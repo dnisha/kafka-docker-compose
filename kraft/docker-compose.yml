@@ -1,0 +1,56 @@
+version: "3.8"
+services:
+  broker1:
+    image: confluentinc/cp-kafka:7.5.0
+    environment:
+      - CLUSTER_ID=o3WzlxTJT6WSaewjUBkWnA
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=controller,broker
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://broker1:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@broker1:9093,2@broker2:9093,3@broker3:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    ports:
+      - "19092:9092"
+    networks:
+      - kafka-net
+
+  broker2:
+    image: confluentinc/cp-kafka:7.5.0
+    environment:
+      - CLUSTER_ID=o3WzlxTJT6WSaewjUBkWnA
+      - KAFKA_NODE_ID=2
+      - KAFKA_PROCESS_ROLES=controller,broker
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://broker2:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@broker1:9093,2@broker2:9093,3@broker3:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    ports:
+      - "29092:9092"
+    networks:
+      - kafka-net
+
+  broker3:
+    image: confluentinc/cp-kafka:7.5.0
+    environment:
+      - CLUSTER_ID=o3WzlxTJT6WSaewjUBkWnA
+      - KAFKA_NODE_ID=3
+      - KAFKA_PROCESS_ROLES=controller,broker
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://broker3:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@broker1:9093,2@broker2:9093,3@broker3:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    ports:
+      - "39092:9092"
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
+    driver: bridge
