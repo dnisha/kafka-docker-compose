@@ -9,6 +9,8 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafka-net
 
   broker1:
     image: confluentinc/cp-kafka:7.5.0
@@ -21,18 +23,23 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      # Note: The internal advertised listener port must match the container port mapped internally (29092 for broker1)
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker1:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3 # Changed to 3 for a 3-broker cluster
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
     depends_on:
       - zookeeper
+    networks:
+      - kafka-net
 
   broker2:
     image: confluentinc/cp-kafka:7.5.0
     hostname: broker2
     container_name: broker2
     ports:
-      - "9093:9093" # Mapped to a different host port
+      - "9093:9093"
       - "29093:29093"
     environment:
       KAFKA_BROKER_ID: 2
@@ -41,16 +48,19 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker2:29093,PLAINTEXT_HOST://localhost:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
     depends_on:
       - zookeeper
-      - broker1
+    networks:
+      - kafka-net
 
   broker3:
     image: confluentinc/cp-kafka:7.5.0
     hostname: broker3
     container_name: broker3
     ports:
-      - "9094:9094" # Mapped to a different host port
+      - "9094:9094"
       - "29094:29094"
     environment:
       KAFKA_BROKER_ID: 3
@@ -59,6 +69,13 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker3:29094,PLAINTEXT_HOST://localhost:9094
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
     depends_on:
       - zookeeper
-      - broker2
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
+    driver: bridge
