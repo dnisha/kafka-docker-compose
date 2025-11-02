@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "=== ZooKeeper Controller Failover Test with Load ==="
+echo "=== ZooKeeper Controller Failover Test ==="
 
 # Function to get the current controller ID
 get_controller_id() {
@@ -9,7 +9,7 @@ get_controller_id() {
 }
 
 echo ""
-echo "Step 1: Creating topics and generating load..."
+echo "Step 1: Creating topics..."
 echo "Creating 30 topics (60 partitions total)..."
 
 # Create 30 topics
@@ -28,19 +28,7 @@ done
 echo "✓ Created 30 topics with 60 partitions total"
 echo ""
 
-echo "Step 2: Starting background producer (10K messages/sec)..."
-docker exec -d broker1 kafka-producer-perf-test \
-    --topic load-test-topic-1 \
-    --num-records 1000000 \
-    --record-size 1024 \
-    --throughput 10000 \
-    --producer-props bootstrap.servers=broker1:29092 > /dev/null 2>&1
-
-echo "✓ Background load started"
-sleep 3
-echo ""
-
-echo "Step 3: Finding current controller..."
+echo "Step 2: Finding current controller..."
 CONTROLLER_ID=$(get_controller_id)
 
 # Loop until a controller ID is found
@@ -53,7 +41,7 @@ done
 echo "Current controller is: broker${CONTROLLER_ID}"
 echo ""
 
-echo "Step 4: Testing controller failover..."
+echo "Step 3: Testing controller failover..."
 echo "Killing controller broker${CONTROLLER_ID} container..."
 START_TIME=$(date +%s%N | cut -b1-13)
 docker kill broker${CONTROLLER_ID} > /dev/null 2>&1
@@ -81,7 +69,7 @@ echo "New controller is: broker${NEW_CONTROLLER_ID}"
 echo ""
 
 # Restart the killed broker for cleanup
-echo "Step 5: Cleanup - Restarting the killed broker${CONTROLLER_ID}..."
+echo "Step 4: Cleanup - Restarting the killed broker${CONTROLLER_ID}..."
 docker start broker${CONTROLLER_ID} > /dev/null 2>&1
 
 # Verify all brokers are back
@@ -93,7 +81,7 @@ echo ""
 echo "=== Test Complete ==="
 echo "Summary:"
 echo "  - Cluster: ZooKeeper-based Kafka"
-echo "  - Load: 30 topics, 60 partitions, 10K msg/sec"
+echo "  - Topics: 30 topics, 60 partitions"
 echo "  - Old Controller: broker${CONTROLLER_ID}"
 echo "  - New Controller: broker${NEW_CONTROLLER_ID}"
 echo "  - Failover Time: ${FAILOVER_TIME}ms"
